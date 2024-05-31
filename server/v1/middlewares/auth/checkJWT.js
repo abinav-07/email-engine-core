@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
 
 const { UnauthorizedException } = require("../../exceptions/httpsExceptions")
-const UserQueries = require("../../queries/users")
 
 //Secret Key
 const jwtSecretKey = `${process.env.JWT_SECRET_KEY}`

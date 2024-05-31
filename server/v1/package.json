@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "migrate": "npx sequelize-cli db:migrate",
-    "server": "npm run migrate && nodemon index.js"
+    "server": "nodemon --watch /node/app  index.js"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.10",
     "apidoc": "^1.2.0",
     "axios": "^1.6.8",
     "bcrypt": "^5.0.1",

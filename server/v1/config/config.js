@@ -1,21 +1,27 @@
-const dotenv = require("dotenv")
-const path = require("path")
+const { Client } = require("@elastic/elasticsearch")
+const {
+  ELASTIC_USERNAME,
+  ELASTIC_PASSWORD,
+  OUTLOOK_CLIENT_ID,
+  OUTLOOK_CLIENT_SECRET,
+  OUTLOOK_REDIRECT_URI,
+} = process.env
 
-// Setting different path for Env, since its inside server folder
-dotenv.config({ path: path.resolve(__dirname, "../.env") })
-module.exports = {
-  development: {
-    username: process.env.MY_SQL_USERNAME,
-    password: process.env.MY_SQL_PASSWORD,
-    database: process.env.MY_SQL_DB_NAME,
-    host: process.env.MY_SQL_HOST,
-    dialect: "mysql",
-    define: {
-      timeStamps: true,
-      // Dynamic name, sequelize sets it to "createdAt"
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
-    logging: process.env.NODE_ENV === "development", //logs sequelize executions
+const elasticUrl = process.env.ELASTIC_URL || "http://localhost:9200"
+const esclient = new Client({
+  node: elasticUrl,
+  auth: {
+    username: ELASTIC_USERNAME,
+    password: ELASTIC_PASSWORD,
   },
+})
+const outlook = {
+  clientId: process.env.OUTLOOK_CLIENT_ID,
+  clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
+  redirectUri: process.env.OUTLOOK_REDIRECT_URI,
+}
+
+module.exports = {
+  esclient,
+  outlook,
 }

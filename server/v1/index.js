@@ -9,6 +9,7 @@ dotenv.config({ path: path.resolve(__dirname, "./.env") })
 //  Services
 const { NotFoundException } = require("./exceptions/httpsExceptions")
 const errorHandler = require("./middlewares/errorHandler")
+const init = require("./models")
 
 //Initialize With Express
 const app = express()
@@ -26,6 +27,9 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Headers", "*")
   next()
 })
+
+// Init Elastic Search
+init()
 
 //Routes
 app.use("/v1", require("./routes/users"))

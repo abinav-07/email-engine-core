@@ -19,4 +19,3 @@ export const createFeatures = async (values: any) => {
 export const deletePage = async (id: number) => {
   return API.delete(`/admin/pages/${id}/delete`)
 }
-

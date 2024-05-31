@@ -1,46 +1,68 @@
-const fs = require("fs")
-const path = require("path")
-const Sequelize = require("sequelize")
+const { esclient } = require("../config/config")
+const { ESIndices } = require("../constants")
+const { BadRequestException } = require("../exceptions/httpsExceptions")
 
-const basename = path.basename(__filename)
-const env = process.env.NODE_ENV || "development"
-const config = require(`${__dirname}/../config/config.js`)[env]
-const db = {}
+const init = async () => {
+  try {
+    // Ensure indices exist
+    await ensureIndices()
 
-// This file reads all the models that we created inside this folder and initializes them with sequelize
-let sequelize
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config)
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config)
+    // Seed initial data
+    await seedInitialData()
+
+    console.log("Initialization completed successfully")
+  } catch (err) {
+    console.error("Initialization failed:", err)
+    throw new BadRequestException(null, err)
+  }
 }
 
-// Sync the database models with the database schema
-// sequelize
-//   .sync({force:true})
-//   .then(() =>{
-//     return sequelize.seeders.run()
-//   }).then(()=>{
-//     console.log("Connected to the database")
-//   })
-//   .catch((err) => console.error("Unable to connect to the database", err));
-
-fs.readdirSync(__dirname)
-  .filter((file) => {
-    return file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js"
-  })
-  .forEach((file) => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes)
-    db[model.name] = model
-  })
-
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db)
+const ensureIndices = async () => {
+  try {
+    for (const key in ESIndices) {
+      let index = ESIndices[key]
+      const indexExists = await esclient.indices.exists({ index })
+      if (indexExists?.body) {
+        console.log(`Index '${index}' already exists`)
+      } else {
+        await esclient.indices.create({ index })
+        console.log(`Index '${index}' created successfully`)
+      }
+    }
+  } catch (err) {
+    throw new Error(`Failed to ensure indices: ${err.message}`)
   }
-})
+}
 
-db.sequelize = sequelize
-db.Sequelize = Sequelize
+const seedInitialData = async () => {
+  try {
+    const userIndex = ESIndices.User
+    const userExists = await esclient.exists({
+      index: userIndex,
+      type: "_doc",
+      id: "1",
+    })
 
-module.exports = db
+    if (!userExists?.body) {
+      await esclient.index({
+        index: userIndex,
+        type: "_doc",
+        id: "1",
+        body: {
+          name: "John Don ho",
+          email: "admin@gmail.com",
+          role: "Admin",
+          password: "$2a$12$rEp6m9wsUklwdoVhrQ7gnOW1RtfbzGj/Eme2XVrfJbiwjFk/H6oMa",
+          created_at: new Date(),
+        },
+      })
+      console.log("User seeded successfully")
+    } else {
+      console.log("User already exists, skipping seeding")
+    }
+  } catch (err) {
+    throw new Error(`Failed to seed initial data: ${err.message}`)
+  }
+}
+
+module.exports = init

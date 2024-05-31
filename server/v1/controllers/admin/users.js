@@ -1,10 +1,10 @@
 const Joi = require("joi")
-const bcrypt = require("bcrypt")
 const { Op } = require("sequelize")
 const { ValidationException } = require("../../exceptions/httpsExceptions")
+const { esclient } = require("../../config/config")
+const { ESIndices } = require("../../constants")
+const { responseMapper } = require("../../models/mappers")
 
-//Queries
-const UserQueries = require("../../queries/users")
 
 /**
  * @api {get} /v1/admin/members Get All Users
@@ -38,7 +38,10 @@ const UserQueries = require("../../queries/users")
 const getAll = async (req, res, next) => {
   try {
     // Get All features with child table data
-    const getAll = await UserQueries.getAll({ include: { all: true, separate: true } })
+    const getAll = responseMapper(await esclient.search({
+      index:ESIndices.User,
+      _source: [ "name", "email","role","created_at"], 
+    }))
 
     res.status(200).json(getAll)
   } catch (err) {

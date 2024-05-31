@@ -64,11 +64,7 @@ const App = () => {
             <Route
               path="/"
               element={
-                user?.role == "Admin" ? (
-                  <Navigate to="/admin/features" />
-                ) : (
-                  <AdminPrivateRouter />
-                )
+                user?.role == "Admin" ? <Navigate to="/admin/features" /> : <AdminPrivateRouter />
               }
             />
 

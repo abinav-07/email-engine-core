@@ -10,19 +10,13 @@ import {
   message,
 } from "antd"
 import { useMutation, useQuery } from "react-query"
-import {
-  deletePage,
-  fetchFeatures,
-} from "../../../services"
+import { deletePage, fetchFeatures } from "../../../services"
 import { Header } from "antd/lib/layout/layout"
 import { Content } from "antd/es/layout/layout"
-
-
 
 const FeatureList: React.FC = () => {
   const [form] = Form.useForm()
   const [editingKey, setEditingKey] = useState(null)
-
 
   const {
     data: featuresData,
@@ -35,16 +29,20 @@ const FeatureList: React.FC = () => {
     enabled: true,
     cacheTime: 0,
     select: ({ data }) => {
-      data.forEach(page => {
-        const imageValues = page?.page_features?.filter(item => item.type === 'image').map(item => item.value);
+      data.forEach((page) => {
+        const imageValues = page?.page_features
+          ?.filter((item) => item.type === "image")
+          .map((item) => item.value)
         const combinedImageObject = {
-          type: 'image',
+          type: "image",
           value: imageValues.flat(),
-        };
+        }
 
-        const result = page?.page_features?.filter(item => item.type !== 'image').concat(combinedImageObject);
+        const result = page?.page_features
+          ?.filter((item) => item.type !== "image")
+          .concat(combinedImageObject)
         page.page_features = result
-      });
+      })
       return {
         data: data?.map((values, i) => ({
           ...values,
@@ -85,85 +83,78 @@ const FeatureList: React.FC = () => {
   }
 
   const expandedRowRender = (row) => {
-
     const columns: TableColumnsType<any> = [
-
       {
-        title: 'Product Name', dataIndex: 'title', key: 'title',
-        render: (text) => text || '-',
+        title: "Product Name",
+        dataIndex: "title",
+        key: "title",
+        render: (text) => text || "-",
         width: "25%",
       },
       {
-        title: 'Date', dataIndex: 'created_at', key: 'date',
+        title: "Date",
+        dataIndex: "created_at",
+        key: "date",
         width: "25%",
-        render: (_: any, record: any) => `${record?.created_at ? new Date(record?.created_at).toISOString().split('T')[0] : "-"}`
+        render: (_: any, record: any) =>
+          `${record?.created_at ? new Date(record?.created_at).toISOString().split("T")[0] : "-"}`,
       },
       {
-        title: 'Brand', dataIndex: 'brand', key: 'brand',
+        title: "Brand",
+        dataIndex: "brand",
+        key: "brand",
         width: "20%",
-        render: (_: any, record: any) => `${record?.brand || record?.category || "-"}`
-
+        render: (_: any, record: any) => `${record?.brand || record?.category || "-"}`,
       },
       {
-        title: 'Price', dataIndex: 'price', key: 'price',
+        title: "Price",
+        dataIndex: "price",
+        key: "price",
         width: "20%",
-        render: (text) => text || '-',
+        render: (text) => text || "-",
       },
       {
-        title: 'Description', dataIndex: 'description', key: 'description',
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
         width: "30%",
         render: (_: any, record: any) => {
-          return (
-            <>
-
-              {record?.description || record?.detail || record?.facts || "-"}
-
-            </>
-          )
-
+          return <>{record?.description || record?.detail || record?.facts || "-"}</>
         },
       },
       {
-        title: 'Images', dataIndex: 'image', key: 'image',
+        title: "Images",
+        dataIndex: "image",
+        key: "image",
         width: "20%",
         render: (key) => {
           return (
-            <Carousel style={{ maxWidth: '200px' }} autoplay arrows>
+            <Carousel style={{ maxWidth: "200px" }} autoplay arrows>
               {key?.map((img: any, index: any) => {
                 return (
-                  <div key={index} >
+                  <div key={index}>
                     <img src={img} key={index} width={200} height={200} />
                   </div>
                 )
               })}
             </Carousel>
           )
-        }
+        },
       },
-    ];
+    ]
 
     const transformedData = row?.page_features?.reduce((acc: any, item: any) => {
-
-      acc[item.type] = item.value;
+      acc[item.type] = item.value
 
       if (item.created_at) {
-        acc.created_at = item.created_at;
+        acc.created_at = item.created_at
       }
 
-      return acc;
-    }, {});
+      return acc
+    }, {})
 
-    return (
-
-      <Table
-        bordered columns={columns} dataSource={[transformedData]} pagination={false}
-      />
-
-
-
-    )
+    return <Table bordered columns={columns} dataSource={[transformedData]} pagination={false} />
   }
-
 
   const columns = [
     {
@@ -176,24 +167,26 @@ const FeatureList: React.FC = () => {
       dataIndex: "url",
       width: "50%",
       render: (_: any, record: any) => {
-        const domain = record?.url ? (new URL(record?.url))?.hostname : "-";
-        const name = domain.split('.')[1];
-        return <>
-          <a href={record?.url} target="_blank">{name}: {record?.page_features?.filter(el => el?.type == "title")?.[0]?.value}</a>
-        </>
-      }
+        const domain = record?.url ? new URL(record?.url)?.hostname : "-"
+        const name = domain.split(".")[1]
+        return (
+          <>
+            <a href={record?.url} target="_blank">
+              {name}: {record?.page_features?.filter((el) => el?.type == "title")?.[0]?.value}
+            </a>
+          </>
+        )
+      },
     },
     {
       title: "Page Domain",
       dataIndex: "url",
       width: "25%",
       render: (_: any, record: any) => {
-        const domain = record?.url ? (new URL(record?.url))?.hostname : "-";
+        const domain = record?.url ? new URL(record?.url)?.hostname : "-"
 
-        return <>
-          {domain}
-        </>
-      }
+        return <>{domain}</>
+      },
     },
     {
       title: "Action",
@@ -205,7 +198,10 @@ const FeatureList: React.FC = () => {
         return editable ? (
           <div style={{ display: "flex" }}>
             <div>
-              <Typography.Link onClick={() => removePage(record.id)} style={{ display: "flex", marginRight: 8, color: "red", inlineSize: "max-content" }}>
+              <Typography.Link
+                onClick={() => removePage(record.id)}
+                style={{ display: "flex", marginRight: 8, color: "red", inlineSize: "max-content" }}
+              >
                 Confirm
               </Typography.Link>
             </div>
@@ -226,8 +222,6 @@ const FeatureList: React.FC = () => {
     },
   ]
 
-
-
   return (
     <>
       <Layout>
@@ -246,9 +240,7 @@ const FeatureList: React.FC = () => {
             />
           </Form>
         </Content>
-
       </Layout>
-
     </>
   )
 }

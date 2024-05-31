@@ -38,16 +38,13 @@ const { sequelize } = require("../../models")
 const getAll = async (req, res, next) => {
   try {
     // Get All Pages with child table data
-    const getAllPages = await PageQueries.getAll(
-      {
-        include:{
-          all:true,
-          separate: true
-        }
-      }
-    )
+    const getAllPages = await PageQueries.getAll({
+      include: {
+        all: true,
+        separate: true,
+      },
+    })
 
-      
     res.status(200).json(getAllPages)
   } catch (err) {
     next(err)
@@ -87,16 +84,19 @@ const getAll = async (req, res, next) => {
 const create = async (req, res, next) => {
   // get payload
   const data = req.body
-  let t;
+  let t
 
   // Joi validations
   const schema = Joi.object({
     page_url: Joi.string().required(),
-    extracted_data: Joi.array().items(Joi.object({
-      type:Joi.string().required(),
-      value:Joi.string().required(),
-    }
-    )).required(),
+    extracted_data: Joi.array()
+      .items(
+        Joi.object({
+          type: Joi.string().required(),
+          value: Joi.string().required(),
+        }),
+      )
+      .required(),
   })
 
   const validationResult = schema.validate(data, { abortEarly: false })
@@ -111,28 +111,36 @@ const create = async (req, res, next) => {
       url: data?.page_url,
     })
 
-    if (getPage){
+    if (getPage) {
       // Delete all prev features
-      await PageFeatureQueries.delete({
-        where:{
-          page_id:getPage?.id
-        }
-      },t)
-    }else{
+      await PageFeatureQueries.delete(
+        {
+          where: {
+            page_id: getPage?.id,
+          },
+        },
+        t,
+      )
+    } else {
       // Create new page if page was not available
-      getPage=await PageQueries.createPage({
-        url:data?.page_url
-      },t)
+      getPage = await PageQueries.createPage(
+        {
+          url: data?.page_url,
+        },
+        t,
+      )
     }
 
     // Add all new features
-    for(const extractedElement of data?.extracted_data){
-        await PageFeatureQueries.create({
-          type:extractedElement?.type,
-          value:extractedElement?.value,
-          page_id:getPage?.id
-        },t)
-      
+    for (const extractedElement of data?.extracted_data) {
+      await PageFeatureQueries.create(
+        {
+          type: extractedElement?.type,
+          value: extractedElement?.value,
+          page_id: getPage?.id,
+        },
+        t,
+      )
     }
 
     await t.commit()
@@ -145,7 +153,6 @@ const create = async (req, res, next) => {
     next(err)
   }
 }
-
 
 /**
  * @api {delete} /v1/admin/pages/:page_id/delete Delete Page
@@ -185,11 +192,14 @@ const deleteOne = async (req, res, next) => {
     if (!checkFeatures) throw new ValidationException(null, "Page not found!")
 
     // Delete Pages
-    await PageFeatureQueries.delete({
-      where:{page_id:data?.page_id}
-    },t)
+    await PageFeatureQueries.delete(
+      {
+        where: { page_id: data?.page_id },
+      },
+      t,
+    )
 
-    await PageQueries.delete(data?.page_id,t)
+    await PageQueries.delete(data?.page_id, t)
 
     const payload = {
       success: true,

@@ -1,37 +1,52 @@
 version: '3.3'
 
 services:
-  db:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MY_SQL_PASSWORD}
-      MYSQL_DATABASE: ${MY_SQL_DB_NAME}
-    container_name: mysql
+  elasticsearch:
+    container_name: tqd-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.21
     volumes:
-      - mysql-data:/var/lib/mysql # Persistent storage for database data
+      - esdata:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - discovery.type=single-node
     ports:
-      - 33066:3306
+      - 9300:9300
+      - 9200:9200
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      interval: 15s
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s http://localhost:9200/_cat/health | grep -q 'green' || exit 1"
+        ]
+      interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
 
-  adminer:
-    image: adminer
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.17.21
     ports:
-      - ${ADMINER_PORT}:8080
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
 
   backend:
     build:
       context: .
       dockerfile: ./server/v1/DockerFile
     depends_on:
-      db:
+      elasticsearch:
         condition: service_healthy
     env_file: .env
+    volumes:
+      - ./server/v1:/node/app
+      - /node/app/node_modules
     ports:
-      - 5000:5000
+      - ${NODE_PORT}:${NODE_PORT}
     container_name: node-app
 
   react-build:
@@ -50,4 +65,4 @@ services:
       - backend
 
 volumes:
-  mysql-data: # Define a named volume for persistent MySQL data
+  esdata: # Define a named volume for persistent MySQL data
