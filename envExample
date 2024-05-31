@@ -1,0 +1,13 @@
+#NODE
+JWT_SECRET_KEY=adadawx21.aaxSec@21
+NODE_PORT=5000
+MY_SQL_USERNAME=root
+MY_SQL_PASSWORD=secret
+MY_SQL_DB_NAME=extension_scraping
+MY_SQL_HOST=db
+NODE_ENV=development
+ADMINER_PORT=5001
+
+#REact
+REACT_APP_API=http://localhost:5000/v1
+

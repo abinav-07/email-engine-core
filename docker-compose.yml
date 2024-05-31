@@ -1,0 +1,53 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MY_SQL_PASSWORD}
+      MYSQL_DATABASE: ${MY_SQL_DB_NAME}
+    container_name: mysql
+    volumes:
+      - mysql-data:/var/lib/mysql # Persistent storage for database data
+    ports:
+      - 33066:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  adminer:
+    image: adminer
+    ports:
+      - ${ADMINER_PORT}:8080
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./server/v1/DockerFile
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - 5000:5000
+    container_name: node-app
+
+  react-build:
+    build:
+      context: .
+      dockerfile: ./web/DockerFile
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./web:/react/app
+      - /react/app/node_modules
+    container_name: react-app
+    env_file: .env
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data: # Define a named volume for persistent MySQL data

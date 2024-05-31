@@ -1,0 +1,39 @@
+{
+ 
+    "name": "Scrapper Extension",
+    "manifest_version": 3,
+    "version": "1.0.0",
+    "description": "A scraping extension using React",
+    "permissions": ["activeTab"],  
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "content_scripts": [
+      {
+        "matches": [
+            "https://www.amazon.com/*",
+            "https://www.ebay.com/*",
+            "https://www.etsy.com/*",
+            "https://www.daraz.com.np/*"
+        ], 
+        "js": ["./scripts/content.js"]  
+      }
+    ],
+    "action": {
+      "default_popup": "./scripts/popup.html",
+      "default_icon": {
+        "16": "logo192.png",
+        "48": "logo192.png",
+        "128": "logo192.png"
+      }
+    },
+    "background": {
+        "service_worker": "./scripts/background.js" 
+      },
+    "icons": {
+      "16": "logo192.png",
+      "48": "logo192.png",
+      "128": "logo192.png"
+    }
+  }
+  

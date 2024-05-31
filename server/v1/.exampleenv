@@ -1,0 +1,8 @@
+JWT_SECRET_KEY=etestadas2131a@
+PORT=8000
+MY_SQL_USERNAME=root
+MY_SQL_PASSWORD=""
+MY_SQL_DB_NAME=role_based_app
+MY_SQL_HOST=127.0.0.1
+NODE_ENV=development
+

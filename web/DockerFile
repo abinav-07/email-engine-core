@@ -1,0 +1,28 @@
+FROM node:20.13.1-alpine
+
+# Set the working directory.
+WORKDIR /react/app
+
+# Install react-scripts globally.
+RUN npm install -g react-scripts
+
+# Copy the package.json and package-lock.json files.
+COPY ./web/package*.json ./
+
+# Install dependencies.
+RUN npm install
+
+# Copy the rest of the application code.
+COPY ./web/ .
+
+# Change ownership of the directory to the node user.
+RUN chown -Rh node:node /react/app
+
+# Use the node user from here on.
+USER node
+
+# Expose the port.
+EXPOSE 3000
+
+# Run the application.
+CMD ["sh", "-c", "npm start"]

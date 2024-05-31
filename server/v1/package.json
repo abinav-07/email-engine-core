@@ -1,0 +1,38 @@
+{
+  "name": "node-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "migrate": "npx sequelize-cli db:migrate",
+    "server": "npm run migrate && nodemon index.js"
+  },
+  "dependencies": {
+    "apidoc": "^1.2.0",
+    "axios": "^1.6.8",
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "buffer": "^6.0.3",
+    "chalk": "^4",
+    "concurrently": "^7.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.2.5",
+    "path": "^0.12.7",
+    "prettier": "^3.2.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "sequelize": "^6.6.2",
+    "sequelize-cli": "^6.2.0",
+    "standard": "^16.0.3",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "jsdoc": "^3.6.7",
+    "nodemon": "^3.1.0"
+  }
+}
