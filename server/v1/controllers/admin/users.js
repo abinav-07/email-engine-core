@@ -2,7 +2,7 @@ const Joi = require("joi")
 const { Op } = require("sequelize")
 const { ValidationException } = require("../../exceptions/httpsExceptions")
 const { esclient } = require("../../config/config")
-const { ESIndices } = require("../../constants")
+const { ESIndices } = require("../../enums")
 const { responseMapper } = require("../../models/mappers")
 
 

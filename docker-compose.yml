@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.9'
 
 services:
   elasticsearch:
@@ -7,9 +7,14 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     environment:
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      # - bootstrap.memory_lock=true
+      # - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - discovery.type=single-node
+      - cluster.routing.allocation.disk.watermark.low=1gb
+      - cluster.routing.allocation.disk.watermark.high=500mb
+      - cluster.routing.allocation.disk.watermark.flood_stage=200mb
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - xpack.security.enabled=false
     ports:
       - 9300:9300
       - 9200:9200
@@ -17,7 +22,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -s http://localhost:9200/_cat/health | grep -q 'green' || exit 1"
+          "curl -s http://localhost:9200/_cat/health || exit 1"
         ]
       interval: 30s
       timeout: 10s
@@ -65,4 +70,5 @@ services:
       - backend
 
 volumes:
-  esdata: # Define a named volume for persistent MySQL data
+  esdata:
+    driver: local

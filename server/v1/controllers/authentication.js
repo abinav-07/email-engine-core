@@ -6,8 +6,11 @@ const bcrypt = require("bcrypt")
 const { ValidationException } = require("../exceptions/httpsExceptions")
 
 const { esclient } = require("../config/config")
-const { ESIndices } = require("../constants")
+const { ESIndices, EMAILSERVICES } = require("../enums")
 const { responseMapper } = require("../models/mappers")
+const { randomUUID } = require("crypto")
+const OutlookProvider = require("../services/email/outlookProvider")
+const outlookProvider = require("../services/email/outlookProvider")
 
 const jwtSecretKey = `${process.env.JWT_SECRET_KEY}`
 
@@ -17,11 +20,19 @@ const jwtSecretKey = `${process.env.JWT_SECRET_KEY}`
  * @apiGroup Authentication
  * @apiDescription Register a user
  *
+ * @apiParam {String} first_name The first name of the user.
+ * @apiParam {String} last_name The last name of the user.
  * @apiParam {String} email The email of the user.
+ * @apiParam {String} password The password of the user.
+ * @apiParam {String} confirm_password The confirmation of the password.
  *
  * @apiParamExample {json} Request Example:
  * {
+ *    "first_name": "Test",
+ *    "last_name": "Me",
  *    "email": "test@mailinator.com",
+ *    "password": "Test@123",
+ *    "confirm_password": "Test@123"
  * }
  *
  * @apiSuccess {Object} user JSON object representing the registered user data.
@@ -46,7 +57,20 @@ const registerUser = async (req, res, next) => {
 
   // Joi validations
   const schema = Joi.object({
+    first_name: Joi.string().required(),
+    last_name: Joi.string().required(),
     email: Joi.string().required().email(),
+    password: Joi.string()
+      .required()
+      .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{6,20})"))
+      .messages({
+        "string.pattern.base": "Password must contain alphabets and numbers",
+        "string.required": "Password is required",
+      }),
+    confirm_password: Joi.string().equal(Joi.ref("password")).required().messages({
+      "any.only": "Passwords do not match",
+      "string.required": "Confirm Password is required",
+    }),
   })
 
   const validationResult = schema.validate(data, { abortEarly: false })
@@ -54,38 +78,48 @@ const registerUser = async (req, res, next) => {
   try {
     if (validationResult && validationResult.error)
       throw new ValidationException(null, validationResult.error)
+    // Adding role for the user manually
 
+    data.role = "User"
+    data.created_at=new Date()
+
+  // Check if user exists
+  const user = responseMapper(await esclient.search({
+    index:ESIndices.User,
+    size: 1,
+    body: {
+      query: {
+        term: {
+          email: data?.email,
+        },
+      },
+    },
+  }))[0]
+
+    if (user && user.email) throw new ValidationException(null, "User Already Registered!")
+
+    const localId = randomUUID();
     //Hash Password
     const hashedPassword = bcrypt.hashSync(data.password, 10)
     data.password = hashedPassword
 
-    // Adding role for the user manually
-    data.role = "User"
-
-    //Remove Confirmed Password from body data
     delete data.confirm_password
 
-    const user = await UsersQueries.getUser({ email: data.email })
-
-    if (user && user.email) throw new ValidationException(null, "User Already Registered!")
 
     // Create new user
-    const registerResponse = await UsersQueries.createUser(data)
-
-    const payload = {
-      user_id: registerResponse.id,
-      first_name: registerResponse.first_name,
-      last_name: registerResponse.last_name,
-      email: registerResponse.email,
-      role: registerResponse.role,
-    }
-    // Auth sign in
-    const token = jwt.sign(payload, jwtSecretKey)
-
-    res.status(200).json({
-      user: payload,
-      token,
+     await esclient.index({
+      index:ESIndices.User,
+      type:"_doc",
+      id:localId,
+      body:{
+        ...data
+      }
     })
+
+    const oauthUrl=OutlookProvider.getAuthUrl(localId, req.headers.referer)
+
+    // Redirect to Outlook authentication
+    res.status(200).json({oauthUrl});
   } catch (err) {
     next(err)
   }
@@ -176,7 +210,58 @@ const loginUser = async (req, res, next) => {
   }
 }
 
+const callbackUrl = async (req, res, next) => {
+  const data = req.body
+
+  // Joi validation
+  const schema = Joi.object({
+    code: Joi.string().required(),
+    state: Joi.object().required(),
+  })
+
+  const validationResult = schema.validate(data, { abortEarly: false })
+  try {
+
+    if (validationResult && validationResult.error)
+      throw new ValidationException(null, validationResult.error)
+  
+     // Extract the authorization code and start from the query parameters
+     const {code,state} = data;
+     let userData;
+     let emailServiceUserId;
+    
+    //  GET USER DATA and do anything with it now.
+  if(state.from==EMAILSERVICES.OUTLOOK){
+    //  Get user data using the code 
+     userData=await outlookProvider.getAccessToken(code);
+     emailServiceUserId=userData.id
+  }
+
+  // Some data transformation shenanigans
+  delete userData.id
+  userData.service_user_id=emailServiceUserId
+
+await esclient.update({
+  index:ESIndices.User,
+  id: state.localUserId,
+  body:{
+    doc:{
+      ...userData
+    }
+  }
+})
+    
+
+    res.status(200).json({message:"Successfull Outlook setup"})
+  } catch (err) {
+    next(err)
+  }
+}
+
+
+
 module.exports = {
   registerUser,
   loginUser,
+  callbackUrl,
 }

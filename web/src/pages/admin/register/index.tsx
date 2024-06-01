@@ -10,14 +10,11 @@ import { createUser } from "../../../services/users"
 const RegisterUserPage = () => {
   const history = useNavigate()
 
-  const { setUser } = useContext(AuthContext)
 
   const { mutate, isLoading: createLoading } = useMutation(createUser, {
     onSuccess: ({ data }: any) => {
-      localStorage.setItem("role-token", data?.token)
-      // Set Auth Context USer
-      setUser(parseJwt())
-      history("/admin/login")
+      console.log("here", data)
+      window.location.href = data.oauthUrl;
     },
     onError: (err: any) => {
       message.open({

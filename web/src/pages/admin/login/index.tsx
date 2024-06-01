@@ -1,15 +1,39 @@
 import React, { useContext, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Layout, Row, Col, Form, Input, Button, message } from "antd"
 import { Content, Header } from "antd/lib/layout/layout"
 import { LeftOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons"
 import { AuthContext, parseJwt } from "../../../utils"
 import { useMutation } from "react-query"
-import { loginUser } from "../../../services"
+import { loginUser, updateUser } from "../../../services"
 
 const LoginAdminPage = () => {
   const navigate = useNavigate()
   const { setUser } = useContext(AuthContext)
+  const [searchParams] = useSearchParams();
+
+
+  // Get Signed In User's states
+  useEffect(() => {
+    const code = searchParams.get('code');
+    const state = JSON.parse(decodeURIComponent(searchParams.get('state')));
+    // Send the userData to the Node.js server for further processing
+    if (code) {
+      updateUserState({
+        code,
+        state
+      })
+    }
+  }, [searchParams]);
+
+  const { mutate: updateUserState } = useMutation(updateUser, {
+    onSuccess: () => {
+      message.open({
+        type: "success",
+        content: "User registered successfully, please login as admin to view all users data"
+      })
+    },
+  })
 
   const { mutate, isLoading } = useMutation(loginUser, {
     onSuccess: ({ data }: any) => {

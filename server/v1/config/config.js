@@ -5,6 +5,9 @@ const {
   OUTLOOK_CLIENT_ID,
   OUTLOOK_CLIENT_SECRET,
   OUTLOOK_REDIRECT_URI,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI
 } = process.env
 
 const elasticUrl = process.env.ELASTIC_URL || "http://localhost:9200"
@@ -15,13 +18,22 @@ const esclient = new Client({
     password: ELASTIC_PASSWORD,
   },
 })
-const outlook = {
-  clientId: process.env.OUTLOOK_CLIENT_ID,
-  clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
-  redirectUri: process.env.OUTLOOK_REDIRECT_URI,
+
+const emailConfigs={
+  outlook : {
+    clientId: OUTLOOK_CLIENT_ID,
+    clientSecret: OUTLOOK_CLIENT_SECRET,
+    redirectUri: OUTLOOK_REDIRECT_URI,
+  },
+  gmail:{
+    clientId: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    redirectUri: GOOGLE_REDIRECT_URI,
+  },
+  // Other IMAP services here
 }
 
 module.exports = {
   esclient,
-  outlook,
+  emailConfigs
 }

@@ -18,5 +18,5 @@ export const fetchUsers = async (): Promise<AxiosResponse<any[]>> => {
 }
 
 export const updateUser = async (values: any): Promise<AxiosResponse<any[]>> => {
-  return await API.patch(`/admin/member/update`, values)
+  return await API.patch(`/auth/callback`, values)
 }

@@ -1,5 +1,5 @@
 const { esclient } = require("../config/config")
-const { ESIndices } = require("../constants")
+const { ESIndices } = require("../enums")
 const { BadRequestException } = require("../exceptions/httpsExceptions")
 
 const init = async () => {
