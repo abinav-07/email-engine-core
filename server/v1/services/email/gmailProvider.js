@@ -1,11 +1,11 @@
-const config = require('../../config/config');
+const config = require("../../config/config")
 
-class GmailProvider  {
+class GmailProvider {
   constructor() {
-    this.redirectUri=config.emailConfigs.gmail.redirectUri
-    this.clientId=config.emailConfigs.gmail.clientId
-    this.clientSecret=config.emailConfigs.gmail.clientSecret
+    this.redirectUri = config.emailConfigs.gmail.redirectUri
+    this.clientId = config.emailConfigs.gmail.clientId
+    this.clientSecret = config.emailConfigs.gmail.clientSecret
   }
 }
 
-module.exports = new GmailProvider();
+module.exports = new GmailProvider()

@@ -29,9 +29,9 @@ exports.schemaMapper = async () => {
   }
 }
 
-exports.responseMapper=(response)=>{
-    return  response?.body?.hits?.hits?.map(hit => ({
-        id: hit?._id,
-        ...hit?._source
-    }));
+exports.responseMapper = (response) => {
+  return response?.body?.hits?.hits?.map((hit) => ({
+    id: hit?._id,
+    ...hit?._source,
+  }))
 }

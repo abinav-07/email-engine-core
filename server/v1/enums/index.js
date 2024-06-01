@@ -7,9 +7,9 @@ const HTTPSTATUSCODES = Object.freeze({
   VALIDATION_ERROR: 422,
 })
 
-const EMAILSERVICES=Object.freeze({
-  GMAIL:"gmail",
-  OUTLOOK:"outlook",
+const EMAILSERVICES = Object.freeze({
+  GMAIL: "gmail",
+  OUTLOOK: "outlook",
 })
 
 const ESIndices = Object.freeze({
@@ -18,9 +18,8 @@ const ESIndices = Object.freeze({
   Mailboxes: "mailboxes",
 })
 
-
 module.exports = {
   HTTPSTATUSCODES,
   EMAILSERVICES,
-  ESIndices
+  ESIndices,
 }

@@ -5,7 +5,6 @@ const { esclient } = require("../../config/config")
 const { ESIndices } = require("../../enums")
 const { responseMapper } = require("../../models/mappers")
 
-
 /**
  * @api {get} /v1/admin/members Get All Users
  * @apiName GetAll
@@ -38,10 +37,12 @@ const { responseMapper } = require("../../models/mappers")
 const getAll = async (req, res, next) => {
   try {
     // Get All features with child table data
-    const getAll = responseMapper(await esclient.search({
-      index:ESIndices.User,
-      _source: [ "name", "email","role","created_at"], 
-    }))
+    const getAll = responseMapper(
+      await esclient.search({
+        index: ESIndices.User,
+        _source: ["name", "email", "role", "created_at"],
+      }),
+    )
 
     res.status(200).json(getAll)
   } catch (err) {

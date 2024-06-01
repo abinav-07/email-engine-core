@@ -10,27 +10,26 @@ import { loginUser, updateUser } from "../../../services"
 const LoginAdminPage = () => {
   const navigate = useNavigate()
   const { setUser } = useContext(AuthContext)
-  const [searchParams] = useSearchParams();
-
+  const [searchParams] = useSearchParams()
 
   // Get Signed In User's states
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = JSON.parse(decodeURIComponent(searchParams.get('state')));
+    const code = searchParams.get("code")
+    const state = JSON.parse(decodeURIComponent(searchParams.get("state")))
     // Send the userData to the Node.js server for further processing
     if (code) {
       updateUserState({
         code,
-        state
+        state,
       })
     }
-  }, []);
+  }, [])
 
   const { mutate: updateUserState } = useMutation(updateUser, {
     onSuccess: (_) => {
       message.open({
         type: "success",
-        content: "User registered successfully, please login as admin to view all users data"
+        content: "User registered successfully, please login as admin to view all users data",
       })
     },
   })

@@ -7,7 +7,7 @@ const {
   OUTLOOK_REDIRECT_URI,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
-  GOOGLE_REDIRECT_URI
+  GOOGLE_REDIRECT_URI,
 } = process.env
 
 const elasticUrl = process.env.ELASTIC_URL || "http://localhost:9200"
@@ -19,13 +19,13 @@ const esclient = new Client({
   },
 })
 
-const emailConfigs={
-  outlook : {
+const emailConfigs = {
+  outlook: {
     clientId: OUTLOOK_CLIENT_ID,
     clientSecret: OUTLOOK_CLIENT_SECRET,
     redirectUri: OUTLOOK_REDIRECT_URI,
   },
-  gmail:{
+  gmail: {
     clientId: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
     redirectUri: GOOGLE_REDIRECT_URI,
@@ -35,5 +35,5 @@ const emailConfigs={
 
 module.exports = {
   esclient,
-  emailConfigs
+  emailConfigs,
 }

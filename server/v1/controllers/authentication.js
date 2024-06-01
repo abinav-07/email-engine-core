@@ -1,5 +1,3 @@
-
-
 const jwt = require("jsonwebtoken")
 const Joi = require("joi")
 const bcrypt = require("bcrypt")
@@ -80,45 +78,46 @@ const registerUser = async (req, res, next) => {
     // Adding role for the user manually
 
     data.role = "User"
-    data.created_at=new Date()
+    data.created_at = new Date()
 
-  // Check if user exists
-  const user = responseMapper(await esclient.search({
-    index:ESIndices.User,
-    size: 1,
-    body: {
-      query: {
-        term: {
-          email: data?.email,
+    // Check if user exists
+    const user = responseMapper(
+      await esclient.search({
+        index: ESIndices.User,
+        size: 1,
+        body: {
+          query: {
+            term: {
+              email: data?.email,
+            },
+          },
         },
-      },
-    },
-  }))[0]
+      }),
+    )[0]
 
     if (user && user.email) throw new ValidationException(null, "User Already Registered!")
 
-    const localId = randomUUID();
+    const localId = randomUUID()
     //Hash Password
     const hashedPassword = bcrypt.hashSync(data.password, 10)
     data.password = hashedPassword
 
     delete data.confirm_password
 
-
     // Create new user
-     await esclient.index({
-      index:ESIndices.User,
-      type:"_doc",
-      id:localId,
-      body:{
-        ...data
-      }
+    await esclient.index({
+      index: ESIndices.User,
+      type: "_doc",
+      id: localId,
+      body: {
+        ...data,
+      },
     })
 
-    const oauthUrl=outlookProvider.getAuthUrl(localId, req.headers.referer)
+    const oauthUrl = outlookProvider.getAuthUrl(localId, req.headers.referer)
 
     // Redirect to Outlook authentication
-    res.status(200).json({oauthUrl});
+    res.status(200).json({ oauthUrl })
   } catch (err) {
     next(err)
   }
@@ -172,18 +171,19 @@ const loginUser = async (req, res, next) => {
       throw new ValidationException(null, validationResult.error)
 
     // Check if user exists
-    const user = responseMapper(await esclient.search({
-      index:ESIndices.User,
-      size: 1,
-      body: {
-        query: {
-          match: {
-            email: data?.email,
+    const user = responseMapper(
+      await esclient.search({
+        index: ESIndices.User,
+        size: 1,
+        body: {
+          query: {
+            match: {
+              email: data?.email,
+            },
           },
         },
-      },
-    }))[0]
-    
+      }),
+    )[0]
 
     if (!user || !user.email) throw new ValidationException(null, "User Not Registered")
 
@@ -192,7 +192,7 @@ const loginUser = async (req, res, next) => {
 
     const payload = {
       user_id: user.id,
-      name:user?.name,
+      name: user?.name,
       email: user.email,
       role: user.role,
     }
@@ -219,59 +219,52 @@ const callbackUrl = async (req, res, next) => {
 
   const validationResult = schema.validate(data, { abortEarly: false })
   try {
-
     if (validationResult && validationResult.error)
       throw new ValidationException(null, validationResult.error)
-  
-     // Extract the authorization code and start from the query parameters
-     const {code,state} = data;
-     let userData,accessToken,mailboxes,emails,bulkMailBody;
-     let emailServiceUserId;
-    
+
+    // Extract the authorization code and start from the query parameters
+    const { code, state } = data
+    let userData, accessToken, mailboxes, emails, bulkMailBody
+    let emailServiceUserId
+
     //  GET USER DATA and do anything with it now.
-  if(state.from==EMAILSERVICES.OUTLOOK){
-    //  Get user da ta using the code 
-     const outLookdata=await outlookProvider.getAccessToken(code);
-     userData=outLookdata.userData
-     accessToken=outLookdata.accessToken
-     emailServiceUserId=userData.id
+    if (state.from == EMAILSERVICES.OUTLOOK) {
+      //  Get user da ta using the code
+      const outLookdata = await outlookProvider.getAccessToken(code)
+      userData = outLookdata.userData
+      accessToken = outLookdata.accessToken
+      emailServiceUserId = userData.id
 
-
-    //  Get mailboxes and emails for initial sync
-    mailboxes=await outlookProvider.getMailboxes(accessToken)
-    emails=await outlookProvider.getEmails(accessToken)
-  bulkMailBody=outlookProvider.mapMailBoxesAndEmails(mailboxes,emails,state.localUserId)
-
-  }
-
-  // Some data transformation shenanigans
-  delete userData.id
-  userData.service_user_id=emailServiceUserId
-  userData.access_token=accessToken
-
-
-// Update User with new PARAMs
-await esclient.update({
-  index:ESIndices.User,
-  id: state.localUserId,
-  body:{
-    doc:{
-      ...userData
+      //  Get mailboxes and emails for initial sync
+      mailboxes = await outlookProvider.getMailboxes(accessToken)
+      emails = await outlookProvider.getEmails(accessToken)
+      bulkMailBody = outlookProvider.mapMailBoxesAndEmails(mailboxes, emails, state.localUserId)
     }
-  }
-})
 
-  //  Upload bulk mail body for initial sync 
-   await esclient.bulk({ refresh: true, body: bulkMailBody });
-    
+    // Some data transformation shenanigans
+    delete userData.id
+    userData.service_user_id = emailServiceUserId
+    userData.access_token = accessToken
 
-    res.status(200).json({message:"Successfull Outlook setup"})
+    // Update User with new PARAMs
+    await esclient.update({
+      index: ESIndices.User,
+      id: state.localUserId,
+      body: {
+        doc: {
+          ...userData,
+        },
+      },
+    })
+
+    //  Upload bulk mail body for initial sync
+    await esclient.bulk({ refresh: true, body: bulkMailBody })
+
+    res.status(200).json({ message: "Successfull Outlook setup" })
   } catch (err) {
     next(err)
   }
 }
-
-
 
 module.exports = {
   registerUser,

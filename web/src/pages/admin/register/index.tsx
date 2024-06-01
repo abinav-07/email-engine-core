@@ -10,11 +10,10 @@ import { createUser } from "../../../services/users"
 const RegisterUserPage = () => {
   const history = useNavigate()
 
-
   const { mutate, isLoading: createLoading } = useMutation(createUser, {
     onSuccess: ({ data }: any) => {
       console.log("here", data)
-      window.location.href = data.oauthUrl;
+      window.location.href = data.oauthUrl
     },
     onError: (err: any) => {
       message.open({
