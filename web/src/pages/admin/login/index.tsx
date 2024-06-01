@@ -24,10 +24,10 @@ const LoginAdminPage = () => {
         state
       })
     }
-  }, [searchParams]);
+  }, []);
 
   const { mutate: updateUserState } = useMutation(updateUser, {
-    onSuccess: () => {
+    onSuccess: (_) => {
       message.open({
         type: "success",
         content: "User registered successfully, please login as admin to view all users data"

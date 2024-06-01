@@ -9,7 +9,6 @@ const { esclient } = require("../config/config")
 const { ESIndices, EMAILSERVICES } = require("../enums")
 const { responseMapper } = require("../models/mappers")
 const { randomUUID } = require("crypto")
-const OutlookProvider = require("../services/email/outlookProvider")
 const outlookProvider = require("../services/email/outlookProvider")
 
 const jwtSecretKey = `${process.env.JWT_SECRET_KEY}`
@@ -116,7 +115,7 @@ const registerUser = async (req, res, next) => {
       }
     })
 
-    const oauthUrl=OutlookProvider.getAuthUrl(localId, req.headers.referer)
+    const oauthUrl=outlookProvider.getAuthUrl(localId, req.headers.referer)
 
     // Redirect to Outlook authentication
     res.status(200).json({oauthUrl});
@@ -212,7 +211,6 @@ const loginUser = async (req, res, next) => {
 
 const callbackUrl = async (req, res, next) => {
   const data = req.body
-
   // Joi validation
   const schema = Joi.object({
     code: Joi.string().required(),
@@ -227,20 +225,32 @@ const callbackUrl = async (req, res, next) => {
   
      // Extract the authorization code and start from the query parameters
      const {code,state} = data;
-     let userData;
+     let userData,accessToken,mailboxes,emails,bulkMailBody;
      let emailServiceUserId;
     
     //  GET USER DATA and do anything with it now.
   if(state.from==EMAILSERVICES.OUTLOOK){
-    //  Get user data using the code 
-     userData=await outlookProvider.getAccessToken(code);
+    //  Get user da ta using the code 
+     const outLookdata=await outlookProvider.getAccessToken(code);
+     userData=outLookdata.userData
+     accessToken=outLookdata.accessToken
      emailServiceUserId=userData.id
+
+
+    //  Get mailboxes and emails for initial sync
+    mailboxes=await outlookProvider.getMailboxes(accessToken)
+    emails=await outlookProvider.getEmails(accessToken)
+  bulkMailBody=outlookProvider.mapMailBoxesAndEmails(mailboxes,emails,state.localUserId)
+
   }
 
   // Some data transformation shenanigans
   delete userData.id
   userData.service_user_id=emailServiceUserId
+  userData.access_token=accessToken
 
+
+// Update User with new PARAMs
 await esclient.update({
   index:ESIndices.User,
   id: state.localUserId,
@@ -250,6 +260,9 @@ await esclient.update({
     }
   }
 })
+
+  //  Upload bulk mail body for initial sync 
+   await esclient.bulk({ refresh: true, body: bulkMailBody });
     
 
     res.status(200).json({message:"Successfull Outlook setup"})
