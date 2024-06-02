@@ -104,6 +104,13 @@ const FeatureList: React.FC = () => {
         width: "20%",
         render: (text) => <>{text?.flagStatus}</>,
       },
+      {
+        title: "Deleted",
+        dataIndex: "@removed",
+        key: "@removed",
+        width: "20%",
+        render: (text) => <>{text?.reason ? <Tag color="red">{text?.reason}</Tag> : <Tag color="green">Not Deleted</Tag>}</>,
+      },
     ]
 
     return (

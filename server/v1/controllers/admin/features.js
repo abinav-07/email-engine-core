@@ -37,7 +37,7 @@ const getAll = async (req, res, next) => {
     const usersResponse = responseMapper(
       await esclient.search({
         index: ESIndices.User,
-        // _source: ["id","name", "email", "role", "created_at"],
+        size:1000,
         body: {
           query: {
             bool: {
@@ -54,6 +54,7 @@ const getAll = async (req, res, next) => {
     const mailboxesResponse = responseMapper(
       await esclient.search({
         index: ESIndices.Mailboxes,
+        size:1000,
         body: {
           query: {
             terms: {
@@ -67,6 +68,7 @@ const getAll = async (req, res, next) => {
     const emailsResponse = responseMapper(
       await esclient.search({
         index: ESIndices.Emails,
+        size:1000,
         body: {
           query: {
             terms: {

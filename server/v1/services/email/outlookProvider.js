@@ -62,6 +62,7 @@ class OutlookProvider {
         },
       })
 
+
       const { value, "@odata.deltaLink": newDeltaLink } = response.data
 
       return { mails: value, newDeltaLink }
