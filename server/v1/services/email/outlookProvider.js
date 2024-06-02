@@ -13,7 +13,8 @@ class OutlookProvider {
 
   getAuthUrl(localUserId, returnUrl = "/admin/login") {
     const redirectUri = encodeURIComponent(`${this.redirectUri}`)
-    const scopes = encodeURIComponent("https://graph.microsoft.com/.default")
+    const scopes = encodeURIComponent("User.Read Mail.Read Mail.ReadWrite Mail.Send");
+
     const state = encodeURIComponent(
       JSON.stringify({ localUserId, returnUrl, from: EMAILSERVICES.OUTLOOK }),
     )
