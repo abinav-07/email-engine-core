@@ -20,6 +20,7 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
+    "socket.io-client": "^4.7.5",
     "styled-components": "^6.1.8",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
@@ -42,7 +43,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
   }
 }

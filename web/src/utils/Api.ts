@@ -1,7 +1,8 @@
 import axios from "axios"
+import { API_URL } from "../config"
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API,
+  baseURL: `${API_URL}/v1`,
   responseType: "json",
 })
 

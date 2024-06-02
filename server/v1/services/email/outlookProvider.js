@@ -110,6 +110,7 @@ class OutlookProvider {
 
   async monitorEmailChanges() {
     try {
+      let changesBool=false;
       // Retrieve stored delta links for the user
       const deltaLinks = responseMapper(
         await config.esclient.search({
@@ -140,11 +141,13 @@ class OutlookProvider {
               },
             )
             await config.esclient.bulk({ refresh: true, body: bulkMailBody })
+            changesBool=true
           }
         }
       }
-
       console.log("Email changes monitored and indexed successfully.")
+return changesBool
+      
       return
     } catch (error) {
       console.error("Failed to monitor email changes:", error)

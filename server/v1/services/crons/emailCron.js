@@ -1,5 +1,7 @@
 const cron = require("node-cron")
 const outlookProvider = require("../email/outlookProvider")
+const { getSocketInstance } = require("../socket")
+
 
 /**
  *  NOTE:
@@ -21,7 +23,15 @@ cron.schedule("*/10 * * * * *", async () => {
     // Setting the cron to run
     isRunning = true
 
-    await outlookProvider.monitorEmailChanges()
+    const jobCompleted=await outlookProvider.monitorEmailChanges()
+
+    if(jobCompleted){
+        const socketInstance=getSocketInstance()
+        
+        socketInstance.emit("cron-job-complete", { message: 'Cron job has been completed!' })
+    }
+
+
   } catch (error) {
     console.error("Error in cron job:", error)
   } finally {

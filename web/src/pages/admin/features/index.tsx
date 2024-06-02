@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import {
   Form,
   Layout,
@@ -11,6 +11,11 @@ import { fetchEmails } from "../../../services"
 import { Header } from "antd/lib/layout/layout"
 import { Content } from "antd/es/layout/layout"
 import { TableWrapper } from "./styles"
+import { io } from 'socket.io-client';
+import { API_URL } from "../../../config"
+
+//Socket 
+let socket: any;
 
 const FeatureList: React.FC = () => {
   const [form] = Form.useForm()
@@ -35,6 +40,20 @@ const FeatureList: React.FC = () => {
       }
     },
   })
+
+  useEffect(() => {
+    socket = io(`${API_URL}`);
+    console.log("here", API_URL, socket)
+    socket.on('cron-job-complete', () => {
+      console.log("Here")
+      featuresRefetch()
+    })
+
+    // Unmounting
+    return () => {
+      socket.off();//Remove socket instance on component unmount
+    }
+  }, [])
 
 
 
