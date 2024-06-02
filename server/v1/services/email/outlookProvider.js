@@ -95,7 +95,7 @@ class OutlookProvider {
   mapMailBoxesAndEmails(mailboxes, emails, localUserId) {
     // Making both email and mail boxes type of child-parent table like in SQL.
     const bulkMailBody = []
-    mailboxes.forEach((mailbox) => {
+    mailboxes?.forEach((mailbox) => {
       bulkMailBody.push({
         index: { _index: ESIndices.Mailboxes, _id: mailbox.id, routing: localUserId },
       })

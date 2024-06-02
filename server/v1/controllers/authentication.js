@@ -231,8 +231,8 @@ const callbackUrl = async (req, res, next) => {
     if (state.from == EMAILSERVICES.OUTLOOK) {
       //  Get user da ta using the code
       const outLookdata = await outlookProvider.getAccessToken(code)
-      userData = outLookdata.userData
-      accessToken = outLookdata.accessToken
+      userData = outLookdata?.userData
+      accessToken = outLookdata?.accessToken
       emailServiceUserId = userData.id
 
       //  Get mailboxes and emails for initial sync
@@ -240,8 +240,8 @@ const callbackUrl = async (req, res, next) => {
       emailsWithDeltas = await outlookProvider.getEmails(accessToken)
 
       bulkMailBody = outlookProvider.mapMailBoxesAndEmails(
-        mailboxesAndDeltas.mails,
-        emailsWithDeltas.emails,
+        mailboxesAndDeltas?.mails,
+        emailsWithDeltas?.emails,
         state.localUserId,
       )
 
@@ -252,14 +252,14 @@ const callbackUrl = async (req, res, next) => {
           local_user_id: state.localUserId,
           access_token: accessToken,
           index_type: ESIndices.Mailboxes,
-          delta_link: mailboxesAndDeltas.newDeltaLink,
+          delta_link: mailboxesAndDeltas?.newDeltaLink,
         },
         { index: { _index: ESIndices.DeltaLinks } },
         {
           local_user_id: state.localUserId,
           access_token: accessToken,
           index_type: ESIndices.Emails,
-          delta_link: emailsWithDeltas.newDeltaLink,
+          delta_link: emailsWithDeltas?.newDeltaLink,
         },
       )
     }
