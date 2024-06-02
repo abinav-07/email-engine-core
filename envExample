@@ -3,9 +3,10 @@ JWT_SECRET_KEY=adadawx21.aaxSec@21
 NODE_PORT=5000
 NODE_ENV=development
 ELASTIC_URL=http://elasticsearch:9200
-ELASTIC_USERNAME=elastic
-ELASTIC_PASSWORD=secret
+OUTLOOK_CLIENT_ID=
+OUTLOOK_CLIENT_SECRET=
+OUTLOOK_REDIRECT_URI=http://localhost:3000/admin/login
 
 #REact
-REACT_APP_API=http://localhost:5000/v1
+REACT_APP_API=http://localhost:5000
 

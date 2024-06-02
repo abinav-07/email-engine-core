@@ -1,11 +1,8 @@
-// src/middlewares/rateLimiter.js
+const rateLimit=require('express-rate-limit')
 
-import rateLimit from 'express-rate-limit';
-
-export const rateLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000, // 24 hrs in milliseconds
-  max: 100,
-  message: 'You have exceeded the 100 requests in 24 hrs limit!', 
-  standardHeaders: true,
-  legacyHeaders: false,
+exports.rateLimiter = rateLimit({
+windowMs: 60 * 1000,
+  max: 10,
+  message: "You have exceeded your 10 requests per minute limit.",
+  headers: true,
 });

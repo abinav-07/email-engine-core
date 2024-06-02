@@ -13,6 +13,7 @@ const { NotFoundException } = require("./exceptions/httpsExceptions")
 const errorHandler = require("./middlewares/errorHandler")
 const init = require("./models")
 const { initializeSocket } = require("./services/socket")
+const { rateLimiter } = require("./middlewares/rateLimitter")
 
 //Initialize With Express
 const app = express()
@@ -30,6 +31,8 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Headers", "*")
   next()
 })
+
+app.use(rateLimiter)
 
 // Init Elastic Search
 init()
