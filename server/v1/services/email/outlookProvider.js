@@ -145,7 +145,6 @@ class OutlookProvider {
           }
         }
       }
-      console.log("Email changes monitored and indexed successfully.")
 return changesBool
       
       return

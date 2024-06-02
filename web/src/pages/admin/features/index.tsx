@@ -43,9 +43,7 @@ const FeatureList: React.FC = () => {
 
   useEffect(() => {
     socket = io(`${API_URL}`);
-    console.log("here", API_URL, socket)
     socket.on('cron-job-complete', () => {
-      console.log("Here")
       featuresRefetch()
     })
 

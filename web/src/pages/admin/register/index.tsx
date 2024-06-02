@@ -1,9 +1,9 @@
-import React, { useContext, useEffect } from "react"
+import React, { useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import Layout, { Header, Content } from "antd/lib/layout/layout"
 import { Row, Col, Form, Input, Button, message } from "antd"
 import { LeftOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons"
-import { AuthContext, parseJwt } from "../../../utils"
+import { parseJwt } from "../../../utils"
 import { useMutation } from "react-query"
 import { createUser } from "../../../services/users"
 
@@ -12,7 +12,6 @@ const RegisterUserPage = () => {
 
   const { mutate, isLoading: createLoading } = useMutation(createUser, {
     onSuccess: ({ data }: any) => {
-      console.log("here", data)
       window.location.href = data.oauthUrl
     },
     onError: (err: any) => {

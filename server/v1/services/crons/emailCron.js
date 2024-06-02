@@ -29,6 +29,8 @@ cron.schedule("*/10 * * * * *", async () => {
         const socketInstance=getSocketInstance()
         
         socketInstance.emit("cron-job-complete", { message: 'Cron job has been completed!' })
+
+        console.log("Email changes monitored and indexed successfully.")
     }
 
 
