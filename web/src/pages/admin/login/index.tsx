@@ -11,11 +11,11 @@ const LoginAdminPage = () => {
   const navigate = useNavigate()
   const { setUser } = useContext(AuthContext)
   const [searchParams] = useSearchParams()
-
+  const code = searchParams.get("code")
+  const state = JSON.parse(decodeURIComponent(searchParams.get("state")))
   // Get Signed In User's states
   useEffect(() => {
-    const code = searchParams.get("code")
-    const state = JSON.parse(decodeURIComponent(searchParams.get("state")))
+
     // Send the userData to the Node.js server for further processing
     if (code) {
       updateUserState({
@@ -23,7 +23,7 @@ const LoginAdminPage = () => {
         state,
       })
     }
-  }, [])
+  }, [code])
 
   const { mutate: updateUserState, isLoading: updatingUser } = useMutation(updateUser, {
     onSuccess: (_) => {
