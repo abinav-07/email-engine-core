@@ -88,14 +88,14 @@ const registerUser = async (req, res, next) => {
         body: {
           query: {
             term: {
-              email: data?.email,
+              "email.keyword": data?.email,
             },
           },
         },
       }),
     )[0]
 
-    if (user && user.email) throw new ValidationException(null, "User Already Registered!")
+    if (user) throw new ValidationException(null, "User Already Registered!")
 
     const localId = randomUUID()
     //Hash Password
@@ -185,7 +185,7 @@ const loginUser = async (req, res, next) => {
       }),
     )[0]
 
-    if (!user || !user.email) throw new ValidationException(null, "User Not Registered")
+    if (!user) throw new ValidationException(null, "User Not Registered")
 
     if (user && user.password && !bcrypt.compareSync(data.password, user.password))
       throw new ValidationException(null, "Password did not match")
@@ -224,7 +224,7 @@ const callbackUrl = async (req, res, next) => {
 
     // Extract the authorization code and start from the query parameters
     const { code, state } = data
-    let userData, accessToken, mailboxes, emails, bulkMailBody
+    let userData, accessToken, mailboxesAndDeltas, emailsWithDeltas, bulkMailBody
     let emailServiceUserId
 
     //  GET USER DATA and do anything with it now.
@@ -236,9 +236,32 @@ const callbackUrl = async (req, res, next) => {
       emailServiceUserId = userData.id
 
       //  Get mailboxes and emails for initial sync
-      mailboxes = await outlookProvider.getMailboxes(accessToken)
-      emails = await outlookProvider.getEmails(accessToken)
-      bulkMailBody = outlookProvider.mapMailBoxesAndEmails(mailboxes, emails, state.localUserId)
+      mailboxesAndDeltas = await outlookProvider.getMailboxes(accessToken)
+      emailsWithDeltas = await outlookProvider.getEmails(accessToken)
+
+      bulkMailBody = outlookProvider.mapMailBoxesAndEmails(
+        mailboxesAndDeltas.mails,
+        emailsWithDeltas.emails,
+        state.localUserId,
+      )
+
+      // Add deltaLinks to its indices and accesstoken
+      bulkMailBody.push(
+        { index: { _index: ESIndices.DeltaLinks } },
+        {
+          local_user_id: state.localUserId,
+          access_token: accessToken,
+          index_type:ESIndices.Mailboxes,
+          delta_link: mailboxesAndDeltas.newDeltaLink,
+        },
+        { index: { _index: ESIndices.DeltaLinks } },
+        {
+          local_user_id: state.localUserId,
+          access_token: accessToken,
+          index_type:ESIndices.Emails,
+          delta_link: emailsWithDeltas.newDeltaLink,
+        },
+      )
     }
 
     // Some data transformation shenanigans

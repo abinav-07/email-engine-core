@@ -1,5 +1,4 @@
 const Joi = require("joi")
-const { Op } = require("sequelize")
 const { ValidationException } = require("../../exceptions/httpsExceptions")
 const { esclient } = require("../../config/config")
 const { ESIndices } = require("../../enums")
@@ -40,7 +39,7 @@ const getAll = async (req, res, next) => {
     const getAll = responseMapper(
       await esclient.search({
         index: ESIndices.User,
-        _source: ["name", "email", "role", "created_at"],
+        _source: ["name", "email", "role", "created_at","displayName"],
       }),
     )
 
@@ -51,20 +50,17 @@ const getAll = async (req, res, next) => {
 }
 
 /**
- * @api {patch} /v1/admin/member/update Update User
+ * @api {patch} /v1/admin/members/update Update User
  * @apiName UpdateUser
  * @apiGroup Admin Users
  * @apiDescription Update user
  *
- * @apiParam {String} first_name The updated first name of the user.
- * @apiParam {String} last_name The updated last name of the user.
  * @apiParam {String} email The updated email of the user.
  * @apiParam {String} role Role type
  *
  * @apiParamExample {json} Request Example:
  * {
- *    "first_name": "Test",
- *    "last_name": "Me",
+ *    "role": "user",
  *    "email": "test@mailinator.com",
  * }
  *
@@ -90,8 +86,6 @@ const update = async (req, res, next) => {
 
   // Joi validations
   const schema = Joi.object({
-    first_name: Joi.string().optional(),
-    last_name: Joi.string().optional(),
     email: Joi.string().required().email(),
     role: Joi.string().optional(),
   })
@@ -103,19 +97,33 @@ const update = async (req, res, next) => {
       throw new ValidationException(null, validationResult.error)
 
     // Check if user exists in our DB
-    const checkUser = await UserQueries.getUser({ email: data?.email })
+    const checkUser = responseMapper(
+      await esclient.search({
+        index: ESIndices.User,
+        size: 1,
+        body: {
+          query: {
+            term: {
+              "email.keyword": data?.email,
+            },
+          },
+        },
+      }),
+    )[0]
 
     if (!checkUser) throw new ValidationException(null, "User not found!")
 
-    // Check if email already exists
-    const user = await UserQueries.getUser({ email: data.email, id: { [Op.ne]: checkUser?.id } })
-
-    // Check if email already exists
-    if (user && user.email && checkUser.email !== data.email)
-      throw new ValidationException(null, "Email Already Exists!")
-
     // Update user
-    await UserQueries.updateUser(checkUser?.id, data)
+    await esclient.update({
+      index:ESIndices.User,
+      id:checkUser.id,
+      body: {
+        doc: {
+          ...checkUser,
+          role:data?.role
+        },
+      },
+    })
 
     res.status(200).json({
       success: true,
@@ -125,53 +133,8 @@ const update = async (req, res, next) => {
   }
 }
 
-/**
- * @api {delete} /v1/admin/member/delete Delete User
- * @apiName DeleteUser
- * @apiGroup Admin Users
- * @apiDescription Delete currently logged in user
- *
- * @apiSuccess {Object} Returns the JSON object representing the success message.
- *
- * @apiSuccessExample {json} Success Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true
- *     }
- *
- * @apiError {Object} error Error object if the deletion process fails.
- *
- * @apiErrorExample {json} Error Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "error": "Err message."
- *     }
- */
-const deleteOne = async (req, res, next) => {
-  try {
-    // Get autheticated user from our req payload, set in JWT
-    const { user_id } = req.user
-
-    // Check if user exists in our DB
-    const checkUser = await UserQueries.getUser({ id: user_id })
-
-    if (!checkUser) throw new ValidationException(null, "User not found!")
-
-    // Delete User
-    await UserQueries.deleteUser(user_id)
-
-    const payload = {
-      success: true,
-    }
-
-    res.status(200).json(payload)
-  } catch (err) {
-    next(err)
-  }
-}
 
 module.exports = {
   getAll,
   update,
-  deleteOne,
 }

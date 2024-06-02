@@ -39,6 +39,9 @@ app.use("/v1/admin", require("./routes/admin"))
 app.use((req, res, next) =>
   next(new NotFoundException(null, `404 Not found: ${req.url} does not exist`)),
 )
+
+require("./services/crons/emailCron")
+
 app.use(errorHandler)
 
 app.listen(process.env.NODE_PORT || 5000, () => {

@@ -16,6 +16,7 @@ const ESIndices = Object.freeze({
   User: "users",
   Emails: "emails",
   Mailboxes: "mailboxes",
+  DeltaLinks: "deltalinks",
 })
 
 module.exports = {

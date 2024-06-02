@@ -7,7 +7,7 @@ exports.schemaMapper = async () => {
     const userSchema = {
       id: { type: "keyword" },
       email: {
-        type: "text",
+        type: "keyword",
       },
       name: {
         type: "text",

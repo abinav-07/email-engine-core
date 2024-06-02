@@ -2,6 +2,7 @@ const config = require("../../config/config")
 const { BadRequestException } = require("../../exceptions/httpsExceptions")
 const { default: axios } = require("axios")
 const { EMAILSERVICES, ESIndices } = require("../../enums")
+const { responseMapper } = require("../../models/mappers")
 
 class OutlookProvider {
   constructor() {
@@ -42,6 +43,7 @@ class OutlookProvider {
           Authorization: `Bearer ${accessToken}`,
         },
       })
+
       // Return the user profile data and access token from the response
       return { userData: userData.data, accessToken }
     } catch (error) {
@@ -50,14 +52,20 @@ class OutlookProvider {
     }
   }
 
-  async getMailboxes(accessToken) {
+  async getMailboxes(accessToken, deltaLink = null) {
     try {
-      const response = await axios.get("https://graph.microsoft.com/v1.0/me/mailFolders", {
+      const url =
+        deltaLink || `https://graph.microsoft.com/v1.0/me/mailFolders/delta`
+
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       })
-      return response.data.value
+
+      const { value, "@odata.deltaLink": newDeltaLink } = response.data
+
+      return { mails: value, newDeltaLink }
     } catch (error) {
       console.log("Fetch Mailbox Err", error?.response?.data)
       throw new BadRequestException(null, "Failed to fetch outlook mailboxes")
@@ -66,12 +74,15 @@ class OutlookProvider {
 
   async getEmails(accessToken) {
     try {
-      const response = await axios.get(`https://graph.microsoft.com/v1.0/me/messages`, {
+      const response = await axios.get(`https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       })
-      return response.data.value
+
+      const { value, "@odata.deltaLink": newDeltaLink } = response.data
+
+      return { emails: value, newDeltaLink }
     } catch (error) {
       console.log("Fetch Email Err", error?.response?.data)
       throw new BadRequestException(null, "Failed to fetch outlook emails")
@@ -82,7 +93,7 @@ class OutlookProvider {
     // Making both email and mail boxes type of child-parent table like in SQL.
     const bulkMailBody = []
     mailboxes.forEach((mailbox) => {
-      bulkMailBody.push({ index: { _index: ESIndices.Mailboxes, _id: mailbox.id } })
+      bulkMailBody.push({ index: { _index: ESIndices.Mailboxes, _id: mailbox.id, routing:localUserId } })
       bulkMailBody.push({ ...mailbox, local_user_id: localUserId })
 
       const mailboxEmails = emails.filter((email) => email.parentFolderId === mailbox.id)
@@ -95,6 +106,49 @@ class OutlookProvider {
     })
 
     return bulkMailBody
+  }
+
+  async monitorEmailChanges() {
+    try {
+      // Retrieve stored delta links for the user
+      const deltaLinks = responseMapper(
+        await config.esclient.search({
+          index: ESIndices.DeltaLinks,
+        }),
+      )
+
+      for (const dl of deltaLinks) {
+        const { access_token, delta_link, id:deltaLinkId,index_type } = dl
+
+        // Get changes for emails
+        if (access_token && delta_link) {
+          const { mails, newDeltaLink } = await this.getMailboxes(access_token, delta_link)
+
+          if (mails?.length>0) {
+            // Index the messages into Elasticsearch
+            const bulkMailBody = mails?.flatMap((mail) => [
+              { update: { _index: index_type, _id: mail.id } },
+              // Specifying local user id for new docs
+              { doc: { ...mail,local_user_id:dl?.local_user_id }, doc_as_upsert: true },
+            ])
+
+            bulkMailBody.push(
+              { update: { _index: ESIndices.DeltaLinks, _id: deltaLinkId } },
+              {
+                doc:{delta_link: newDeltaLink},
+                doc_as_upsert: true
+              },
+            )
+            await config.esclient.bulk({ refresh: true, body: bulkMailBody })
+          }
+        }
+      }
+
+      console.log("Email changes monitored and indexed successfully.")
+      return
+    } catch (error) {
+      console.error("Failed to monitor email changes:", error)
+    }
   }
 }
 

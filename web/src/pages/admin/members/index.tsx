@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react"
 import { Form, Input, Popconfirm, Select, Table, Typography, message } from "antd"
 import { useMutation, useQuery } from "react-query"
-import { fetchUsers, updateUser } from "../../../services/users"
+import { fetchUsers, updateUserAdmin } from "../../../services/users"
 import { AuthContext } from "../../../utils"
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
@@ -78,22 +78,24 @@ const MemberList: React.FC = () => {
       return {
         data: data?.map((values, i) => ({
           ...values,
+          displayName: values?.displayName || values?.name,
           key: i,
         })),
       }
     },
   })
 
-  const { mutate, isLoading: updateLoading } = useMutation(updateUser, {
+  const { mutate, isLoading: updateLoading } = useMutation(updateUserAdmin, {
     onSuccess: () => {
       // Reset Editing Key on success
       setEditingKey(null)
-      // Refetch features on successful creation
-      refetch()
+
       message.open({
         type: "success",
         content: "Successfully Updated",
       })
+      // Refetch features on successful creation
+      refetch()
     },
     onError: (err: any) => {
       message.open({
@@ -101,6 +103,7 @@ const MemberList: React.FC = () => {
         content: err?.response?.data?.message || "Error while updating",
       })
     },
+
   })
 
   const isEditing = (record: any) => record.key === editingKey
@@ -121,8 +124,8 @@ const MemberList: React.FC = () => {
 
     const newData = [...usersData?.data]
     const index = newData.findIndex((item) => key === item.key)
-    const item = newData[index]
 
+    const item = newData[index]
     mutate({ ...formValues, email: item?.email })
   }
 
@@ -133,13 +136,8 @@ const MemberList: React.FC = () => {
       width: "20%",
     },
     {
-      title: "First Name",
-      dataIndex: "first_name",
-      width: "25%",
-    },
-    {
-      title: "Last Name",
-      dataIndex: "last_name",
+      title: "Name",
+      dataIndex: "displayName",
       width: "25%",
     },
     {

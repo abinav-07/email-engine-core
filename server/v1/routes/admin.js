@@ -4,20 +4,15 @@ const { checkAdmin, checkJWTToken } = require("../middlewares/auth/checkJWT")
 const router = express.Router()
 
 //Services
-const UserServices = require("../controllers/admin/users")
-// const PageServices = require("../controllers/admin/features")
+const UserControllers = require("../controllers/admin/users")
+const EmailContollers = require("../controllers/admin/features")
 
-// Public route
-// router.post("/pages/create", PageServices.create)
-
-// router.use(checkJWTToken, checkAdmin)
+router.use(checkJWTToken, checkAdmin)
 // User Routes
-router.get("/members", UserServices.getAll)
-// router.patch("/member/update", UserServices.update)
-// router.delete("/member/delete", UserServices.deleteOne)
+router.get("/members", UserControllers.getAll)
+router.patch("/members/update", UserControllers.update)
 
-// Page Features routes
-// router.get("/pages", PageServices.getAll)
-// router.delete("/pages/:page_id/delete", PageServices.deleteOne)
+// Email Features routes
+router.get("/emails", EmailContollers.getAll)
 
 module.exports = router
