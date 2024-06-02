@@ -2,7 +2,6 @@ const cron = require("node-cron")
 const outlookProvider = require("../email/outlookProvider")
 const { getSocketInstance } = require("../socket")
 
-
 /**
  *  NOTE:
  * SETTING UP CRON JOB BECAUSE DELTA LINKS NEED NGROK SETUP,
@@ -23,17 +22,15 @@ cron.schedule("*/10 * * * * *", async () => {
     // Setting the cron to run
     isRunning = true
 
-    const jobCompleted=await outlookProvider.monitorEmailChanges()
+    const jobCompleted = await outlookProvider.monitorEmailChanges()
 
-    if(jobCompleted){
-        const socketInstance=getSocketInstance()
-        
-        socketInstance.emit("cron-job-complete", { message: 'Cron job has been completed!' })
+    if (jobCompleted) {
+      const socketInstance = getSocketInstance()
 
-        console.log("Email changes monitored and indexed successfully.")
+      socketInstance.emit("cron-job-complete", { message: "Cron job has been completed!" })
+
+      console.log("Email changes monitored and indexed successfully.")
     }
-
-
   } catch (error) {
     console.error("Error in cron job:", error)
   } finally {

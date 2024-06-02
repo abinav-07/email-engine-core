@@ -17,10 +17,10 @@ const checkJWTToken = async (req, res, next) => {
     if (jwtToken.startsWith("Bearer")) {
       jwtToken = jwtToken.split(" ")[1] //Bearer xa2132
     }
-    
+
     // Decode the token from the header with the token that we signed in during login/register
     const decodedToken = jwt.verify(jwtToken, jwtSecretKey)
-    
+
     const checkUser = responseMapper(
       await esclient.search({
         index: ESIndices.User,

@@ -103,7 +103,6 @@ const MemberList: React.FC = () => {
         content: err?.response?.data?.message || "Error while updating",
       })
     },
-
   })
 
   const isEditing = (record: any) => record.key === editingKey

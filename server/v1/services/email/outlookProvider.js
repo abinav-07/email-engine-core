@@ -54,8 +54,7 @@ class OutlookProvider {
 
   async getMailboxes(accessToken, deltaLink = null) {
     try {
-      const url =
-        deltaLink || `https://graph.microsoft.com/v1.0/me/mailFolders/delta`
+      const url = deltaLink || `https://graph.microsoft.com/v1.0/me/mailFolders/delta`
 
       const response = await axios.get(url, {
         headers: {
@@ -74,11 +73,14 @@ class OutlookProvider {
 
   async getEmails(accessToken) {
     try {
-      const response = await axios.get(`https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      const response = await axios.get(
+        `https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      })
+      )
 
       const { value, "@odata.deltaLink": newDeltaLink } = response.data
 
@@ -93,7 +95,9 @@ class OutlookProvider {
     // Making both email and mail boxes type of child-parent table like in SQL.
     const bulkMailBody = []
     mailboxes.forEach((mailbox) => {
-      bulkMailBody.push({ index: { _index: ESIndices.Mailboxes, _id: mailbox.id, routing:localUserId } })
+      bulkMailBody.push({
+        index: { _index: ESIndices.Mailboxes, _id: mailbox.id, routing: localUserId },
+      })
       bulkMailBody.push({ ...mailbox, local_user_id: localUserId })
 
       const mailboxEmails = emails.filter((email) => email.parentFolderId === mailbox.id)
@@ -110,7 +114,7 @@ class OutlookProvider {
 
   async monitorEmailChanges() {
     try {
-      let changesBool=false;
+      let changesBool = false
       // Retrieve stored delta links for the user
       const deltaLinks = responseMapper(
         await config.esclient.search({
@@ -119,34 +123,34 @@ class OutlookProvider {
       )
 
       for (const dl of deltaLinks) {
-        const { access_token, delta_link, id:deltaLinkId,index_type } = dl
+        const { access_token, delta_link, id: deltaLinkId, index_type } = dl
 
         // Get changes for emails
         if (access_token && delta_link) {
           const { mails, newDeltaLink } = await this.getMailboxes(access_token, delta_link)
 
-          if (mails?.length>0) {
+          if (mails?.length > 0) {
             // Index the messages into Elasticsearch
             const bulkMailBody = mails?.flatMap((mail) => [
               { update: { _index: index_type, _id: mail.id } },
               // Specifying local user id for new docs
-              { doc: { ...mail,local_user_id:dl?.local_user_id }, doc_as_upsert: true },
+              { doc: { ...mail, local_user_id: dl?.local_user_id }, doc_as_upsert: true },
             ])
 
             bulkMailBody.push(
               { update: { _index: ESIndices.DeltaLinks, _id: deltaLinkId } },
               {
-                doc:{delta_link: newDeltaLink},
-                doc_as_upsert: true
+                doc: { delta_link: newDeltaLink },
+                doc_as_upsert: true,
               },
             )
             await config.esclient.bulk({ refresh: true, body: bulkMailBody })
-            changesBool=true
+            changesBool = true
           }
         }
       }
-return changesBool
-      
+      return changesBool
+
       return
     } catch (error) {
       console.error("Failed to monitor email changes:", error)

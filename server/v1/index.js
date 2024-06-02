@@ -3,8 +3,7 @@ const cors = require("cors")
 const dotenv = require("dotenv")
 const chalk = require("chalk")
 const path = require("path")
-const http = require("http");
-
+const http = require("http")
 
 dotenv.config({ path: path.resolve(__dirname, "./.env") })
 
@@ -51,11 +50,9 @@ require("./services/crons/emailCron")
 app.use(errorHandler)
 
 // Initializing Socket to communicate cron notifications
-const server = http.createServer(app);
+const server = http.createServer(app)
 initializeSocket(server)
 
 server.listen(process.env.NODE_PORT || 5000, () => {
   console.log(chalk.blue(`Server started on ${process.env.NODE_PORT || 5000}!`))
 })
-
-

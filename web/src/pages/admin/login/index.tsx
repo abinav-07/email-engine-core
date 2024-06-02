@@ -65,7 +65,6 @@ const LoginAdminPage = () => {
 
   return (
     <>
-
       <Layout>
         <Header style={{ background: "#fff" }}>
           <Row>
@@ -84,78 +83,70 @@ const LoginAdminPage = () => {
           </Row>
         </Header>
         <Content>
-          {updatingUser ?
-            (
-              <Row
-                justify="center"
-                align="middle"
-                className="main-content"
-              >
-                <span style={{ fontSize: "20px" }}>Updating User...</span>
-                <Spin size="large" />
-
+          {updatingUser ? (
+            <Row justify="center" align="middle" className="main-content">
+              <span style={{ fontSize: "20px" }}>Updating User...</span>
+              <Spin size="large" />
+            </Row>
+          ) : (
+            <Row
+              justify="center"
+              align="middle"
+              className="main-content"
+              style={{ flexDirection: "column", minHeight: "90vh" }}
+            >
+              <Row>
+                <h2>Admin Log in</h2>
               </Row>
 
-            )
-            : (
-              <Row
-                justify="center"
-                align="middle"
-                className="main-content"
-                style={{ flexDirection: "column", minHeight: "90vh" }}
-              >
-                <Row>
-                  <h2>Admin Log in</h2>
-                </Row>
-
-                <Row style={{ width: "100vw", paddingTop: "1rem" }}>
-                  <Col md={{ span: 12 }} offset={6}>
-                    <Form
-                      labelCol={{ span: 8 }}
-                      wrapperCol={{ span: 8 }}
-                      name="loginForm"
-                      onFinish={onSubmit}
+              <Row style={{ width: "100vw", paddingTop: "1rem" }}>
+                <Col md={{ span: 12 }} offset={6}>
+                  <Form
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 8 }}
+                    name="loginForm"
+                    onFinish={onSubmit}
+                  >
+                    <Form.Item
+                      label="Email"
+                      name="email"
+                      rules={[{ required: true, message: "Please Enter Email!" }]}
                     >
-                      <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[{ required: true, message: "Please Enter Email!" }]}
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      label="Password"
+                      name="password"
+                      rules={[{ required: true, message: "Please Enter Password!" }]}
+                    >
+                      <Input.Password
+                        iconRender={(visible) =>
+                          visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                        }
+                      ></Input.Password>
+                    </Form.Item>
+                    <Form.Item
+                      style={{ textAlign: "center" }}
+                      wrapperCol={{
+                        xs: { offset: 0, span: 8 },
+                        md: { offset: 8, span: 8 },
+                      }}
+                      name="logIn"
+                    >
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        style={{ width: "50%" }}
+                        loading={isLoading}
                       >
-                        <Input />
-                      </Form.Item>
-                      <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[{ required: true, message: "Please Enter Password!" }]}
-                      >
-                        <Input.Password
-                          iconRender={(visible) =>
-                            visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
-                          }
-                        ></Input.Password>
-                      </Form.Item>
-                      <Form.Item
-                        style={{ textAlign: "center" }}
-                        wrapperCol={{
-                          xs: { offset: 0, span: 8 },
-                          md: { offset: 8, span: 8 },
-                        }}
-                        name="logIn"
-                      >
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          style={{ width: "50%" }}
-                          loading={isLoading}
-                        >
-                          Log In
-                        </Button>
-                      </Form.Item>
-                    </Form>
-                  </Col>
-                </Row>
+                        Log In
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Col>
               </Row>
-            )}
+            </Row>
+          )}
         </Content>
       </Layout>
     </>

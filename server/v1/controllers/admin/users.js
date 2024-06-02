@@ -39,7 +39,7 @@ const getAll = async (req, res, next) => {
     const getAll = responseMapper(
       await esclient.search({
         index: ESIndices.User,
-        _source: ["name", "email", "role", "created_at","displayName"],
+        _source: ["name", "email", "role", "created_at", "displayName"],
       }),
     )
 
@@ -115,12 +115,12 @@ const update = async (req, res, next) => {
 
     // Update user
     await esclient.update({
-      index:ESIndices.User,
-      id:checkUser.id,
+      index: ESIndices.User,
+      id: checkUser.id,
       body: {
         doc: {
           ...checkUser,
-          role:data?.role
+          role: data?.role,
         },
       },
     })
@@ -132,7 +132,6 @@ const update = async (req, res, next) => {
     next(err)
   }
 }
-
 
 module.exports = {
   getAll,

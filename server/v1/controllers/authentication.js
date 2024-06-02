@@ -251,14 +251,14 @@ const callbackUrl = async (req, res, next) => {
         {
           local_user_id: state.localUserId,
           access_token: accessToken,
-          index_type:ESIndices.Mailboxes,
+          index_type: ESIndices.Mailboxes,
           delta_link: mailboxesAndDeltas.newDeltaLink,
         },
         { index: { _index: ESIndices.DeltaLinks } },
         {
           local_user_id: state.localUserId,
           access_token: accessToken,
-          index_type:ESIndices.Emails,
+          index_type: ESIndices.Emails,
           delta_link: emailsWithDeltas.newDeltaLink,
         },
       )

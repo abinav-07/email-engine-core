@@ -1,25 +1,18 @@
 import React, { useEffect } from "react"
-import {
-  Form,
-  Layout,
-  Table,
-  TableColumnsType,
-  Tag
-} from "antd"
+import { Form, Layout, Table, TableColumnsType, Tag } from "antd"
 import { useQuery } from "react-query"
 import { fetchEmails } from "../../../services"
 import { Header } from "antd/lib/layout/layout"
 import { Content } from "antd/es/layout/layout"
 import { TableWrapper } from "./styles"
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client"
 import { API_URL } from "../../../config"
 
-//Socket 
-let socket: any;
+//Socket
+let socket: any
 
 const FeatureList: React.FC = () => {
   const [form] = Form.useForm()
-
 
   const {
     data: emailsData,
@@ -42,18 +35,16 @@ const FeatureList: React.FC = () => {
   })
 
   useEffect(() => {
-    socket = io(`${API_URL}`);
-    socket.on('cron-job-complete', () => {
+    socket = io(`${API_URL}`)
+    socket.on("cron-job-complete", () => {
       featuresRefetch()
     })
 
     // Unmounting
     return () => {
-      socket.off();//Remove socket instance on component unmount
+      socket.off() //Remove socket instance on component unmount
     }
   }, [])
-
-
 
   const expandedRowRender = (row) => {
     const mailBoxColumns: TableColumnsType<any> = [
@@ -96,32 +87,30 @@ const FeatureList: React.FC = () => {
         dataIndex: "isRead",
         key: "isRead",
         width: "20%",
-        render: (text) => text ? <Tag color="green">Read</Tag> : <Tag color="lime">Not Read</Tag>
+        render: (text) => (text ? <Tag color="green">Read</Tag> : <Tag color="lime">Not Read</Tag>),
       },
       {
         title: "Draft",
         dataIndex: "isDraft",
         key: "isDraft",
         width: "20%",
-        render: (text) => text ? <Tag color="lime">Draft</Tag> : <Tag color="green">Not Draft</Tag>
+        render: (text) =>
+          text ? <Tag color="lime">Draft</Tag> : <Tag color="green">Not Draft</Tag>,
       },
       {
         title: "Flag",
         dataIndex: "flag",
         key: "flag",
         width: "20%",
-        render: (text) => <>{text?.flagStatus}</>
-
+        render: (text) => <>{text?.flagStatus}</>,
       },
     ]
-
 
     return (
       <TableWrapper>
         <Table bordered columns={mailBoxColumns} dataSource={row?.mailboxes} pagination={false} />
         <Table bordered columns={emailColumns} dataSource={row?.emails} pagination={false} />
       </TableWrapper>
-
     )
   }
 
@@ -154,7 +143,6 @@ const FeatureList: React.FC = () => {
       render: (_: any, record: any) =>
         `${record?.created_at ? new Date(record?.created_at).toISOString().split("T")[0] : "-"}`,
     },
-
   ]
 
   return (
