@@ -71,6 +71,13 @@ const FeatureList: React.FC = () => {
 
     const emailColumns: TableColumnsType<any> = [
       {
+        title: "Sender",
+        dataIndex: "sender",
+        key: "sender",
+        width: "25%",
+        render: (text) => <>{text?.emailAddress?.name}</>,
+      },
+      {
         title: "Email Subject",
         dataIndex: "subject",
         key: "subject",
