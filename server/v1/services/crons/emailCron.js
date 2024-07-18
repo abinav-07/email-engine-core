@@ -20,8 +20,8 @@ cron.schedule("*/10 * * * * *", async () => {
 
   try {
     // Setting the cron to run
-    isRunning = true
-
+    isCronRunning = true
+    console.log("Cron job is running....")
     const jobCompleted = await outlookProvider.monitorEmailChanges()
 
     if (jobCompleted) {
@@ -35,6 +35,7 @@ cron.schedule("*/10 * * * * *", async () => {
     console.error("Error in cron job:", error)
   } finally {
     // Reset the flag to false after the run completes
-    isRunning = false
+    console.log("Cron job has ended....")
+    isCronRunning = false
   }
 })

@@ -52,7 +52,7 @@ services:
       - /node/app/node_modules
     ports:
       - ${NODE_PORT}:${NODE_PORT}
-    container_name: node-app
+    container_name: email-node-app
 
   react-build:
     build:
@@ -64,7 +64,7 @@ services:
     volumes:
       - ./web:/react/app
       - /react/app/node_modules
-    container_name: react-app
+    container_name: email-react-app
     env_file: .env
     depends_on:
       - backend
