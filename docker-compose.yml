@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   elasticsearch:
     container_name: tqd-elasticsearch
